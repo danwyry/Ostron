@@ -1,0 +1,4 @@
+.board-cell.highlighted {
+  border: 2px solid red!important;
+
+}
