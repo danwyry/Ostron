@@ -43,7 +43,8 @@ export const piecePossibleDestinations = (board, from) => {
   .filter(to => coordNeq(to,from))
 }  
 
-export const movePiece = (board,from,to) => {
+export const movePiece = (board,from,to) => { if (coordEq(from,to)) return ; 
+
   if (piecePossibleDestinations(board,from).some(destination => coordEq(destination,to)))
     {
       const newBoard = board.map(row => row.slice()); // duplicate board
