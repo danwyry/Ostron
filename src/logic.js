@@ -23,7 +23,7 @@ const newBoard = () => [
   [ 2  , 2  , 2  , 2  , 2  ]
 ];
 
-export const newState = () => { 
+export const makeGame = () => { 
   return {
     board: newBoard(),
     monsterCoordinates: coord(2,2), 
@@ -31,34 +31,63 @@ export const newState = () => {
     currentsMoves: 0
   }
 };
-
-export const won = (state) => {
-  return ! pieceCanMoveAtAll(state.board, state.monsterCoordinates) ||
-    pieceCanGoOnlyToCurrentsHouse(state.board, state.monsterCoordinates, state.currentPlayer);
+/*
+ * Gana el primero que consigue llevar el Neutrón a cualquier casilla libre de su línea de partida.
+ * Un jugador pierde si se ve forzado a llevar el Neutrón hacia una casilla de la línea de partida 
+ * adversaria. También pierde si la situación está bloqueada y en su turno no puede mover el Neutrón 
+ * o, si después de mover el Neutrón, no puede mover ninguna de sus fichas} 
+ */
+export const won = ({ board, monsterCoordinates, currentPlayer}) => {
+  console.clear();
+  console.log(board);
+  console.log(monsterCoordinates);
+  console.log(currentPlayer);
+  console.log(! pieceCanMoveAtAll(board, monsterCoordinates));
+  console.log(pieceCanGoOnlyToPlayersHouse(board, monsterCoordinates, currentPlayer));
+  console.log(pieceAtPlayersHouseRow(currentPlayer,monsterCoordinates));
+  return ! pieceCanMoveAtAll(board, monsterCoordinates) ||
+    pieceAtPlayersHouseRow(currentPlayer,monsterCoordinates) ||
+    pieceCanGoOnlyToPlayersHouse(board, monsterCoordinates, currentPlayer);
 };
 
-export const piecePossibleDestinations = (board, from) => {
-  return moves
-  .map(move => pieceDestinationWithMove(board,from,move))
-  .filter(to => coordNeq(to,from))
-}  
+export const piecePossibleDestinations = (state, from) => {
+  return piecePossibleDestinationsInBoard(state.board,from);
+};
 
-export const movePiece = (board,from,to) => { if (coordEq(from,to)) return ; 
+export const movePiece = (state,from,to) => { if (coordEq(from,to)) return ; 
 
-  if (piecePossibleDestinations(board,from).some(destination => coordEq(destination,to)))
+  if (piecePossibleDestinationsInBoard(state.board,from).some(destination => coordEq(destination,to)))
     {
-      const newBoard = board.map(row => row.slice()); // duplicate board
+      const newBoard = state.board.map(row => row.slice()); // duplicate board
       const piece = newBoard[from.row][from.col];
       newBoard[from.row][from.col] = null;
       newBoard[to.row][to.col] = piece;
-      return newBoard;
+      return {...state, board: newBoard};
     }
   throw new Error("Can't make that move");
+}
+
+export const nextTurn = state => {
+  const {currentPlayer, currentsMoves} = state; 
+  let turnUpdates = {};
+  switch (currentsMoves) {
+    case 0 : turnUpdates.currentsMoves = 1; 
+      break; 
+    case 1 : 
+      turnUpdates.currentsMoves = 0; 
+      turnUpdates.currentPlayer = nextPlayer(currentPlayer); 
+      break; 
+    default: 
+      break; 
+  } 
+  return Object.assign({}, state, turnUpdates);
 }
 
 export const coordEq = (c1,c2) => c2.row === c1.row && c2.col === c1.col;
 
 const coordNeq = (c1,c2) => c2.row !== c1.row || c2.col !== c1.col;
+
+const nextPlayer = currentPlayer => currentPlayer === 1 ? 2 : 1;
 
 const moves = [
   ({row,col}) => coord(row-1, col-1),
@@ -71,9 +100,19 @@ const moves = [
   ({row,col}) => coord(row+1, col+1),
 ];
 
-const pieceCanGoOnlyToCurrentsHouse = (board, from, currentPlayer) => {
-  const currentsHouseRow = currentPlayer === 1 ? 0 : 4;
-  return piecePossibleDestinations(board,from).every( ({ row }) => row === currentsHouseRow);
+const playersHouseRow = player => player === 1 ? 0 : 4;
+
+const pieceAtPlayersHouseRow = (player,position) => position.row === playersHouseRow(player);
+
+const pieceCanGoOnlyToPlayersHouse = (board, from, player) => {
+  const houseRow = playersHouseRow(player);
+  return piecePossibleDestinationsInBoard(board,from).every( ({ row }) => row === houseRow);
+};
+
+const piecePossibleDestinationsInBoard = (board,from) => {
+  return moves
+    .map(move => pieceDestinationWithMove(board,from,move))
+    .filter(to => coordNeq(to,from));
 };
 
 const pieceDestinationWithMove = (board, from, move) => {
@@ -107,17 +146,20 @@ const isAvailablePosition = (board,coords) => {
 
 
 // tests
-// const center = coord(2,2);
-// const testingBoard = [
-//   [null, 1  , 1  ,null,null],
-//   [null, 2  , 1  , 1  ,null],
-//   [null, 2  , 0  , 2  ,null],
-//   [null, 2  ,null, 1  ,null],
-//   [null,null,null,null, 2  ]
-// ];
-// console.log(piecePossibleDestinations(testingBoard, center));
-// console.log(pieceDestinationWithMove(testingBoard, center, moves[6]));
-// console.log(piecePossibleDestinations(testingBoard, center));
-// console.log(pieceCanGoOnlyToCurrentsHouse(testingBoard, center, 2));
-// console.log(won(state));
+const testingBoard = [
+  [null, 1  , 1  ,null,null],
+  [null, 2  , 1  , 1  ,null],
+  [null, 2  , 0  , 2  ,null],
+  [null, 2  ,null, 1  ,null],
+  [null,null,null,null, 2  ]
+];
+const testingGame = {
+  ...makeGame(),
+  board: testingBoard
+}; 
+// console.log(testingGame);
+// console.log(pieceDestinationWithMove(testingBoard, coord(2,2), moves[6]));
+// console.log(piecePossibleDestinations(testingGame, coord(2,2)));
+// console.log(pieceCanGoOnlyToPlayersHouse(testingBoard, coord(2,2), 2));
+// console.log(won(testingGame));
 // console.log(movePiece(testingBoard,coord(2,2), coord(1,2)));

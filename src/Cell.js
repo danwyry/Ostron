@@ -2,11 +2,6 @@ import React from 'react';
 import './Cell.css';
 
 class Cell extends React.Component {
-
-  onMouseOver = (event) => {
-    this.props.onMouseOverCell();
-  }
-
   render () {
     let className ; 
     switch (this.props.symbol) { 
@@ -17,12 +12,28 @@ class Cell extends React.Component {
     }
     const highlight = this.props.highlight ? "highlighted": "";
     return (
-      <div className="column" onMouseOver={this.onMouseOver}>
-        <div className={`ui segment board-cell ${highlight}`}>
+      <div className="column" 
+        onMouseOver={this.onMouseOver} 
+        draggable="true" 
+        onDragStart={this.props.onDragStart} 
+        onDrop={this.props.onDrop} 
+        onDragOver={ this.onDragOver }
+    >
+        <div className={`ui segment board-cell ${highlight}`} >
           <i className={`${className}`}></i>
         </div>
       </div>
     );
+  }
+
+  onMouseOver = () => {
+    this.props.onMouseOverCell();
+  }
+
+  onDragOver = (e) => { 
+    e.preventDefault(); 
+    e.stopPropagation(); 
+    return false; 
   }
 } 
 

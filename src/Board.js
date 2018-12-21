@@ -6,27 +6,9 @@ import { coord, coordEq } from './logic';
 
 export default class Board extends React.Component {
   state = {
-    highlightables: []
+    highlightables: [],
   };
-  renderRows() {
-    return this.props.board.map( (row,i) => (
-      <div key={`row${i}`} className="row">
-        {this.renderCells(row,i)}
-      </div>
-    ));
-  }
-  renderCells(row,row_index) {
-    return row.map( (symbol,col_index) => {
-      const position = coord(row_index,col_index);
-      const highlight = this.isHighlightable(position);
-      return <Cell key={`row${row_index}col${col_index}`} symbol={symbol} highlight={highlight} onMouseOverCell={this.onMouseOverCell(position)} />
-    } );
-  }
-
-  isHighlightable = position => this.state.highlightables.some(coord => coordEq(coord,position));
-
-  onMouseOverCell = from => () => this.setState({ highlightables: this.props.getHightlightables(from) });
-
+  movingPieceFrom = null; 
   render(){
     return (
       <div className="ui five column celled vertically padded horizontally padded grid"> 
@@ -34,4 +16,43 @@ export default class Board extends React.Component {
       </div>
     );
   }
+
+  renderRows() {
+    return this.props.board.map( (row,i) => (
+      <div key={`row${i}`} className="row">
+        {this.renderCells(row,i)}
+      </div>
+    ));
+  }
+
+  renderCells(row,row_index) {
+    return row.map( (symbol,col_index) => {
+      const key = `row${row_index}col${col_index}`;
+      const position = coord(row_index,col_index);
+      const highlight = this.isHighlightable(position);
+
+      const onDragStart = () => { 
+        this.movingPieceFrom =  position ;
+      }; 
+
+      const onDrop = (e) => { 
+        e.preventDefault();
+        this.props.onPieceDragged(this.movingPieceFrom, position);
+        this.movingPieceFrom = null;
+      };
+
+      const onMouseOverCell = this.onMouseOverCell(position);
+
+      return (
+        <Cell key={key} symbol={symbol} highlight={highlight} 
+          onMouseOverCell={onMouseOverCell} 
+          onDragStart={onDragStart} 
+          onDrop={onDrop} 
+        />);
+    });
+  }
+
+  isHighlightable = position => this.state.highlightables.some(it => coordEq(it,position));
+
+  onMouseOverCell = from => () => this.setState({ highlightables: this.props.getPossibleDestinationsFrom(from) });
 }
