@@ -1,4 +1,7 @@
 .board-cell.highlighted {
-  border: 2px solid red!important;
+  border: 3px solid #DDAAAA !important;
+}
 
+.board-cell.movable {
+  border: 3px solid #DDD !important;
 }

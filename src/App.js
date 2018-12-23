@@ -1,27 +1,50 @@
 import React from 'react';
 import Board from './Board';
-import { piecePossibleDestinations, movePiece, makeGame, nextTurn, won } from './logic';
+import { piecePossibleDestinations, movePiece, makeGame, won } from './logic';
 
 export default class App extends React.Component {
   state = { 
     game: makeGame(), 
     errorMsg: null, 
-    wonGame: null
+    winner: null
   } ;
 
   render() {
-    const pieceToMove = this.state.game.currentsMoves === 0 ? "the monster" : "a piece";
+    const rendered = this.state.winner === null
+      ? this.renderGame()
+      : this.renderWinner();
     return (
       <div className="ui container">
-        <h1>Player {this.state.game.currentPlayer} <small>Move {pieceToMove}</small></h1>
-        {this.renderErrorMessage()}
-        <Board board={this.state.game.board} 
-          getPossibleDestinationsFrom={this.getPossibleDestinationsFrom} 
-          onPieceDragged={this.onPieceDragged}
-          />
+        {rendered}
       </div>
     );
   }
+
+  renderGame = () => {
+    const pieceToMove = this.state.game.currentsMoves === 0 
+      ? "the monster" 
+      : "a piece";
+    return (
+      <div>
+        <h1>Player {this.state.game.currentPlayer} <small>Move {pieceToMove}</small></h1>
+        {this.renderErrorMessage()}
+      <Board board={this.state.game.board} 
+        movablePieces={this.state.game.currentsMoves === 0 ? 0 : this.state.game.currentPlayer}
+        getPossibleDestinationsFrom={this.getPossibleDestinationsFrom} 
+        onPieceDragged={this.onPieceDragged}
+        />
+      </div>
+    );
+  };
+
+  renderWinner = () => {
+    return (
+      <div>
+        <h1>Ganó el jugador {this.state.winner}</h1>
+        <button onClick={this.resetGame}>Volver a empezar</button>
+      </div>
+    );
+  };
 
   renderErrorMessage() {
     return (this.state.errorMsg) 
@@ -29,21 +52,25 @@ export default class App extends React.Component {
       : null;
   }
 
+  resetGame = () => {
+    this.setState({
+      game: makeGame(),
+      winner: null,
+      errorMsg: null
+    });
+  }
+
   onPieceDragged = (from,to) => {
     try {
       let game = movePiece(this.state.game,from,to);
-      const gano = won(game);
-      console.log('??? -> ');
-      console.log(gano);
-      if (gano)
-        {
-          console.log('ganó ' + game.currentPlayer);
-          this.setState({
-            wonGame: this.state.game.currentPlayer,
-            errorMsg: null,
-          });
-        }
-        game = nextTurn(game);
+      const winner = won(game);
+      if (winner) {
+        this.setState({
+          game: game, 
+          winner: winner
+        });
+        return ; 
+      } 
       this.setState({game: game, errorMsg: null});
     } catch (error) {
       this.setState({errorMsg: error});
