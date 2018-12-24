@@ -25,7 +25,7 @@ export default class App extends React.Component {
       ? "the monster" 
       : "a piece";
     return (
-      <div>
+      <div className="ui container">
         <h1>Player {this.state.game.currentPlayer} <small>Move {pieceToMove}</small></h1>
         {this.renderErrorMessage()}
       <Board board={this.state.game.board} 

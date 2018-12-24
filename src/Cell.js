@@ -13,17 +13,15 @@ class Cell extends React.Component {
     const highlight = this.props.highlight ? "highlighted": "";
     const movable = this.props.movable ? "movable": "";
     return (
-      <div className="column" 
+      <div className={`board-cell ${highlight} ${movable}`} 
         onMouseOver={this.onMouseOver} 
         draggable="true" 
         onDragStart={this.props.onDragStart} 
         onDrop={this.props.onDrop}
         onDragOver={ this.onDragOver }
     >
-        <div className={`ui segment board-cell ${highlight} ${movable}`} >
-          <i className={`${className}`}></i>
-        </div>
-      </div>
+      <i className={`big ${className}`}></i>
+    </div>
     );
   }
 

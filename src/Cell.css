@@ -1,7 +1,17 @@
+.board-cell {
+  flex: 1;
+  justify-content: center;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  border: 1px solid #DDD;
+}
+
 .board-cell.highlighted {
   border: 3px solid #DDAAAA !important;
 }
 
 .board-cell.movable {
-  border: 3px solid #DDD !important;
+  background-color: #EEFFEE
+  /* border: 2px solid #BBB !important; */
 }

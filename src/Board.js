@@ -11,7 +11,7 @@ export default class Board extends React.Component {
   movingPieceFrom = null; 
   render(){
     return (
-      <div className="ui five column celled vertically padded horizontally padded grid"> 
+      <div className="board"> 
         {this.renderRows()}
       </div>
     );
@@ -19,7 +19,7 @@ export default class Board extends React.Component {
 
   renderRows() {
     return this.props.board.map( (row,i) => (
-      <div key={`row${i}`} className="row">
+      <div key={`row${i}`} className="board-row">
         {this.renderCells(row,i)}
       </div>
     ));
